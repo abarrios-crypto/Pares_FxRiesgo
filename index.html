@@ -3,26 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PatoClín: Patologías y Factores de Riesgo Prevenibles</title>
+    <title>PatoClín: Conexiones Clínicas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1a3a8f 0%, #0f2557 100%);
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(180deg, #fcd3e7 0%, #a3d5ff 100%);
             min-height: 100vh;
+            color: #d6336c; /* Color de texto principal estilo Kirby (rosa fuerte) */
+            overflow-x: hidden;
+        }
+
+        .kirby-panel {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 4px solid #fff;
+            border-radius: 2rem;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px);
         }
         
+        .kirby-button {
+            border-radius: 9999px;
+            border: 3px solid #fff;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+            transition: all 0.1s ease-in-out;
+            color: white; /* Botones con texto blanco para contraste */
+        }
+
+        .kirby-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+        }
+
+        .kirby-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+        }
+
         .card {
             perspective: 1000px;
             transition: transform 0.2s;
         }
         
         .card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-5px) scale(1.03);
         }
         
         .card-inner {
@@ -41,39 +69,46 @@
             left: 0;
             width: 100%;
             height: 100%;
+            border-radius: 1.5rem;
+            border: 4px solid white;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1);
         }
         
-        .card-back {
+        .card-front.disease {
+             background: linear-gradient(135deg, #ffd166, #ff9f1c);
+        }
+
+        .card-front.risk {
+             background: linear-gradient(135deg, #ff99c8, #f372b2);
+        }
+
+        .card-back.disease {
+            background-color: #fffac8;
+            transform: rotateY(180deg);
+        }
+
+        .card-back.risk {
+            background-color: #ffe5ec;
             transform: rotateY(180deg);
         }
         
+        .card-text-outline {
+            text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        }
+
         .matched {
             opacity: 0.7;
             pointer-events: none;
         }
         
         .highlight {
-            box-shadow: 0 0 15px 5px rgba(255, 255, 255, 0.7);
+            animation: pulse-glow 1s ease-in-out;
         }
-        
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #f00;
-            border-radius: 50%;
-            animation: fall 3s ease-in infinite;
-        }
-        
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-        
-        .progress-bar {
-            transition: width 0.5s ease;
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px 5px rgba(255, 255, 150, 0.7); }
+            50% { box-shadow: 0 0 25px 10px rgba(255, 255, 150, 1); }
+            100% { box-shadow: 0 0 15px 5px rgba(255, 255, 150, 0.7); }
         }
         
         .modal {
@@ -87,263 +122,137 @@
             visibility: visible;
         }
         
-        .team-indicator {
-            transition: all 0.3s ease;
-        }
-        
         .team-indicator.active {
             transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
         
-        .pulse {
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-            }
-        }
-        
-        .slide-in {
-            animation: slideIn 0.5s forwards;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateY(-20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
     </style>
 </head>
-<body class="text-white">
-    <div class="container mx-auto px-4 py-8">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-2">Conexiones</h1>
-            <p class="text-xl">Empareja patologías con sus factores de riesgo prevenibles</p>
-            <p class="text-xl">Creado por: Adriana A. Barrios Rodríguez |Patología Clínica II |Lic. en Biomedicina</p>
+<body>
+    <div class="container mx-auto px-4 py-2">
+        <header class="text-center mb-2">
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold" style="color: white; text-shadow: 3px 3px 0px #ff8fab;">Conexiones</h1>
+            <p class="text-sm sm:text-base">Empareja patologías con sus factores de riesgo prevenibles</p>
+            <p class="text-xs sm:text-sm">Creado por: M.C. Adriana Alicia Barrios Rodríguez</p>
         </header>
         
         <!-- Configuración de equipos -->
-        <div id="team-setup" class="max-w-md mx-auto bg-white/10 backdrop-blur-md rounded-xl p-6 mb-8 slide-in">
+        <div id="team-setup" class="max-w-md mx-auto kirby-panel p-6 my-8 slide-in">
             <h2 class="text-2xl font-bold mb-4 text-center">Configuración de Equipos</h2>
-            
             <div class="mb-4">
-                <label for="team1-name" class="block mb-2">Integrantes del Equipo 1:</label>
-                <input type="text" id="team1-name" class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Equipo 1" value="Equipo 1">
+                <label for="team1-name" class="block mb-2 font-bold">Integrantes del Equipo 1:</label>
+                <input type="text" id="team1-name" class="w-full px-4 py-2 rounded-full bg-white/80 border-4 border-white focus:outline-none focus:ring-4 focus:ring-pink-300" placeholder="Equipo 1" value="Equipo 1">
             </div>
-            
             <div class="mb-6">
-                <label for="team2-name" class="block mb-2">Integrantes del Equipo 2:</label>
-                <input type="text" id="team2-name" class="w-full px-4 py-2 rounded-lg bg-white/20 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Equipo 2" value="Equipo 2">
+                <label for="team2-name" class="block mb-2 font-bold">Integrantes del Equipo 2:</label>
+                <input type="text" id="team2-name" class="w-full px-4 py-2 rounded-full bg-white/80 border-4 border-white focus:outline-none focus:ring-4 focus:ring-blue-300" placeholder="Equipo 2" value="Equipo 2">
             </div>
-            
             <div class="flex gap-4">
-                <button id="start-game-btn" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transition">
-                    Comenzar Juego
-                </button>
+                <button id="start-game-btn" class="kirby-button flex-1 py-3 bg-gradient-to-b from-green-400 to-green-500 font-bold text-lg">Comenzar Juego</button>
             </div>
         </div>
         
         <!-- Juego principal (oculto inicialmente) -->
         <div id="game-container" class="hidden">
-            <div class="flex flex-col md:flex-row justify-between items-start gap-6">
-                <div class="w-full md:w-3/4">
-                    <!-- Información del juego -->
-                    <div class="bg-white/10 backdrop-blur-md rounded-xl p-6 mb-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mr-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <span id="timer" class="text-xl font-semibold">03:00</span>
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                    </svg>
-                                </div>
-                                <span id="total-score" class="text-xl font-semibold">0</span>
-                            </div>
-                            
-                            <div class="flex items-center">
-                                <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center mr-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                </div>
-                                <span id="pairs" class="text-xl font-semibold">0/16</span>
-                            </div>
-                        </div>
-                        
-                        <div class="w-full bg-white/20 rounded-full h-3 mb-4">
-                            <div id="progress-bar" class="progress-bar bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full" style="width: 100%"></div>
-                        </div>
-                        
-                        <!-- Indicadores de equipos -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div id="team1-indicator" class="team-indicator active bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-3 text-center">
-                                <h3 id="team1-name-display" class="font-semibold mb-1">Equipo 1</h3>
-                                <div class="flex justify-between text-sm">
-                                    <span>Puntos: <span id="team1-score">0</span></span>
-                                    <span>Aciertos: <span id="team1-matches">0</span></span>
-                                </div>
-                            </div>
-                            
-                            <div id="team2-indicator" class="team-indicator bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-3 text-center">
-                                <h3 id="team2-name-display" class="font-semibold mb-1">Equipo 2</h3>
-                                <div class="flex justify-between text-sm">
-                                    <span>Puntos: <span id="team2-score">0</span></span>
-                                    <span>Aciertos: <span id="team2-matches">0</span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Tablero de juego -->
-                    <div id="game-board" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"></div>
-                </div>
-                
-                <!-- Panel lateral -->
-                <div class="w-full md:w-1/4 bg-white/10 backdrop-blur-md rounded-xl p-6 sticky top-6">
-                    <h2 class="text-2xl font-bold mb-4">Instrucciones</h2>
-                    <ul class="list-disc pl-5 mb-6 space-y-2">
-                        <li>Encuentra los pares de patologías y sus factores de riesgo prevenibles</li>
-                        <li>Haz clic en una carta para voltearla</li>
-                        <li>Solo puedes tener dos cartas volteadas a la vez</li>
-                        <li>Si las cartas coinciden, tu equipo gana puntos</li>
-                        <li>Si no coinciden, se voltearán de nuevo y cambia el turno</li>
-                        <li>Completa todos los pares antes de que se acabe el tiempo</li>
+            <!-- Panel Superior Combinado -->
+            <div class="flex flex-col lg:flex-row gap-2 mb-2">
+                <!-- Panel de Instrucciones -->
+                <div class="w-full lg:w-1/2 kirby-panel p-3">
+                    <h2 class="text-lg font-bold mb-1">Instrucciones</h2>
+                    <ul class="list-disc pl-5 space-y-0.5 text-xs">
+                        <li>Encuentra los pares de patologías y sus factores de riesgo.</li>
+                        <li>Cada equipo tiene un tiempo limitado por turno.</li>
+                        <li>Si aciertan un par, ganan puntos y tiempo extra. Si fallan, cambia el turno.</li>
                     </ul>
-                    
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">Dificultad</h3>
-                        <div class="flex gap-2">
-                            <button id="easy-btn" class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition">Fácil</button>
-                            <button id="medium-btn" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition">Intermedio</button>
-                            <button id="hard-btn" class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition">Difícil</button>
-                        </div>
+                </div>
+                <!-- Panel de Dificultad -->
+                <div class="w-full lg:w-1/4 kirby-panel p-3">
+                    <h3 class="text-lg font-semibold mb-1">Dificultad</h3>
+                    <div class="flex flex-col gap-1">
+                        <button id="easy-btn" class="kirby-button w-full px-2 py-1.5 text-sm bg-green-300 hover:bg-green-400">Fácil</button>
+                        <button id="medium-btn" class="kirby-button w-full px-2 py-1.5 text-sm bg-blue-400 hover:bg-blue-500">Intermedio</button>
+                        <button id="hard-btn" class="kirby-button w-full px-2 py-1.5 text-sm bg-pink-400 hover:bg-pink-500">Difícil</button>
                     </div>
-                    
-                    <button id="restart-btn" class="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg font-semibold hover:from-purple-600 hover:to-indigo-700 transition flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Reiniciar juego
+                </div>
+                 <!-- Panel de Reinicio -->
+                <div class="w-full lg:w-1/4 kirby-panel p-3 flex items-center justify-center">
+                    <button id="restart-btn" class="kirby-button w-full h-full py-3 bg-gradient-to-b from-yellow-400 to-orange-500 font-bold flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        Reiniciar
                     </button>
                 </div>
             </div>
+
+            <!-- Información del juego -->
+            <div class="kirby-panel p-2 sm:p-3 mb-2">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
+                    <div class="flex items-center">
+                        <span class="text-sm sm:text-base font-semibold">Turno: <span id="timer" class="font-bold text-lg">00:30</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm sm:text-base font-semibold">Total: <span id="total-score" class="font-bold text-lg">0</span></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="pairs" class="text-sm sm:text-base font-semibold">0/16</span>
+                    </div>
+                </div>
+                <div class="w-full bg-white/50 rounded-full h-4 mt-2 mb-1.5 border-2 border-white">
+                    <div id="progress-bar" class="progress-bar bg-gradient-to-r from-green-400 to-blue-400 h-full rounded-full" style="width: 100%"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div id="team1-indicator" class="team-indicator active bg-pink-300/80 rounded-2xl p-1.5 text-center border-2 border-white">
+                        <h3 id="team1-name-display" class="font-semibold text-xs truncate text-white">Equipo 1</h3>
+                        <div class="flex justify-between text-[10px] text-white/90"><span>Puntos: <span id="team1-score">0</span></span><span>Aciertos: <span id="team1-matches">0</span></span></div>
+                    </div>
+                    <div id="team2-indicator" class="team-indicator bg-blue-300/80 rounded-2xl p-1.5 text-center border-2 border-white">
+                        <h3 id="team2-name-display" class="font-semibold text-xs truncate text-white">Equipo 2</h3>
+                        <div class="flex justify-between text-[10px] text-white/90"><span>Puntos: <span id="team2-score">0</span></span><span>Aciertos: <span id="team2-matches">0</span></span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tablero de juego -->
+            <div id="game-board" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-10 gap-3 sm:gap-4"></div>
         </div>
     </div>
     
     <!-- Modal de victoria -->
-    <div id="win-modal" class="modal fixed inset-0 flex items-center justify-center z-50 bg-black/70">
-        <div class="bg-gradient-to-br from-blue-800 to-purple-900 rounded-2xl p-8 max-w-2xl w-full mx-4 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                    <pattern id="pattern-circles" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse">
-                        <circle id="pattern-circle" cx="10" cy="10" r="2" fill="#fff"></circle>
-                    </pattern>
-                    <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-circles)"></rect>
-                </svg>
-            </div>
-            
+    <div id="win-modal" class="modal fixed inset-0 flex items-center justify-center z-50 bg-black/70 p-4">
+        <div class="kirby-panel p-6 sm:p-8 max-w-2xl w-full mx-auto relative">
             <div class="text-center relative z-10">
-                <div class="inline-block p-4 rounded-full bg-green-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold mb-2" style="color: #22c55e;">¡Juego Completado!</h2>
+                <p class="text-lg sm:text-xl mb-6">Reporte de resultados</p>
                 
-                <h2 class="text-3xl font-bold mb-2">¡Juego Completado!</h2>
-                <p class="text-xl mb-6">Reporte de resultados</p>
-                
-                <div id="results-container" class="bg-white/10 rounded-lg p-6 mb-6 text-left">
-                    <h3 class="text-2xl font-bold text-center mb-4">
+                <div class="bg-white/50 rounded-2xl p-4 sm:p-6 mb-6 text-left">
+                    <h3 class="text-xl sm:text-2xl font-bold text-center mb-4">
                         <span id="winner-team">Equipo Ganador</span>
-                        <span class="text-yellow-300 ml-2">🏆</span>
+                        <span class="ml-2">🏆</span>
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div id="team1-results" class="bg-blue-900/50 rounded-lg p-4">
-                            <h4 id="team1-result-name" class="font-bold text-lg mb-2 text-center">Equipo 1</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span>Puntuación:</span>
-                                    <span id="team1-final-score" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Pares encontrados:</span>
-                                    <span id="team1-final-matches" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Intentos fallidos:</span>
-                                    <span id="team1-final-misses" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Precisión:</span>
-                                    <span id="team1-final-accuracy" class="font-semibold">0%</span>
-                                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="bg-pink-100/50 rounded-xl p-4 border-2 border-white">
+                            <h4 id="team1-result-name" class="font-bold text-lg mb-2 text-center truncate">Equipo 1</h4>
+                            <div class="space-y-2 text-sm sm:text-base">
+                                <div class="flex justify-between"><span>Puntuación:</span><span id="team1-final-score" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Pares:</span><span id="team1-final-matches" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Fallos:</span><span id="team1-final-misses" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Precisión:</span><span id="team1-final-accuracy" class="font-semibold">0%</span></div>
                             </div>
                         </div>
                         
-                        <div id="team2-results" class="bg-purple-900/50 rounded-lg p-4">
-                            <h4 id="team2-result-name" class="font-bold text-lg mb-2 text-center">Equipo 2</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span>Puntuación:</span>
-                                    <span id="team2-final-score" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Pares encontrados:</span>
-                                    <span id="team2-final-matches" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Intentos fallidos:</span>
-                                    <span id="team2-final-misses" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Precisión:</span>
-                                    <span id="team2-final-accuracy" class="font-semibold">0%</span>
-                                </div>
+                        <div class="bg-blue-100/50 rounded-xl p-4 border-2 border-white">
+                            <h4 id="team2-result-name" class="font-bold text-lg mb-2 text-center truncate">Equipo 2</h4>
+                            <div class="space-y-2 text-sm sm:text-base">
+                                <div class="flex justify-between"><span>Puntuación:</span><span id="team2-final-score" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Pares:</span><span id="team2-final-matches" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Fallos:</span><span id="team2-final-misses" class="font-semibold">0</span></div>
+                                <div class="flex justify-between"><span>Precisión:</span><span id="team2-final-accuracy" class="font-semibold">0%</span></div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-4">
-                        <div class="flex justify-between">
-                            <span>Tiempo restante:</span>
-                            <span id="win-time" class="font-semibold">00:45</span>
-                        </div>
+                    <div class="mt-4 text-sm sm:text-base">
                         <div class="flex justify-between">
                             <span>Nivel:</span>
                             <span id="win-level" class="font-semibold">Intermedio</span>
@@ -351,117 +260,9 @@
                     </div>
                 </div>
                 
-                <div class="flex gap-4">
-                    <button id="download-report-btn" class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Descargar Reporte
-                    </button>
-                    <button id="play-again-btn" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg font-semibold hover:from-green-600 hover:to-teal-700 transition">
-                        Jugar de nuevo
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de derrota -->
-    <div id="lose-modal" class="modal fixed inset-0 flex items-center justify-center z-50 bg-black/70">
-        <div class="bg-gradient-to-br from-gray-800 to-red-900 rounded-2xl p-8 max-w-2xl w-full mx-4 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                    <pattern id="pattern-circles-2" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse" patternContentUnits="userSpaceOnUse">
-                        <circle id="pattern-circle-2" cx="10" cy="10" r="2" fill="#fff"></circle>
-                    </pattern>
-                    <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-circles-2)"></rect>
-                </svg>
-            </div>
-            
-            <div class="text-center relative z-10">
-                <div class="inline-block p-4 rounded-full bg-red-500 mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                
-                <h2 class="text-3xl font-bold mb-2">¡Se acabó el tiempo!</h2>
-                <p class="text-xl mb-6">Reporte de resultados</p>
-                
-                <div id="lose-results-container" class="bg-white/10 rounded-lg p-6 mb-6 text-left">
-                    <h3 class="text-2xl font-bold text-center mb-4">
-                        <span id="lose-winner-team">Equipo Ganador</span>
-                        <span class="text-yellow-300 ml-2">🏆</span>
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div id="lose-team1-results" class="bg-blue-900/50 rounded-lg p-4">
-                            <h4 id="lose-team1-result-name" class="font-bold text-lg mb-2 text-center">Equipo 1</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span>Puntuación:</span>
-                                    <span id="lose-team1-final-score" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Pares encontrados:</span>
-                                    <span id="lose-team1-final-matches" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Intentos fallidos:</span>
-                                    <span id="lose-team1-final-misses" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Precisión:</span>
-                                    <span id="lose-team1-final-accuracy" class="font-semibold">0%</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div id="lose-team2-results" class="bg-purple-900/50 rounded-lg p-4">
-                            <h4 id="lose-team2-result-name" class="font-bold text-lg mb-2 text-center">Equipo 2</h4>
-                            <div class="space-y-2">
-                                <div class="flex justify-between">
-                                    <span>Puntuación:</span>
-                                    <span id="lose-team2-final-score" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Pares encontrados:</span>
-                                    <span id="lose-team2-final-matches" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Intentos fallidos:</span>
-                                    <span id="lose-team2-final-misses" class="font-semibold">0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span>Precisión:</span>
-                                    <span id="lose-team2-final-accuracy" class="font-semibold">0%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <div class="flex justify-between">
-                            <span>Pares encontrados:</span>
-                            <span id="lose-pairs" class="font-semibold">5/16</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Nivel:</span>
-                            <span id="lose-level" class="font-semibold">Intermedio</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex gap-4">
-                    <button id="download-lose-report-btn" class="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg font-semibold hover:from-blue-600 hover:to-indigo-700 transition flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Descargar Reporte
-                    </button>
-                    <button id="try-again-btn" class="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg font-semibold hover:from-orange-600 hover:to-red-700 transition">
-                        Intentar de nuevo
-                    </button>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="download-report-btn" class="kirby-button flex-1 py-3 bg-blue-400 font-bold">Descargar Reporte</button>
+                    <button id="play-again-btn" class="kirby-button flex-1 py-3 bg-green-400 font-bold">Jugar de nuevo</button>
                 </div>
             </div>
         </div>
@@ -469,7 +270,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Datos del juego con enfoque clínico y factores de riesgo prevenibles
+            // Datos del juego
             const easyPairs = [
                 { disease: "Diabetes mellitus tipo 2", risk: "Dieta rica en azúcares refinados" },
                 { disease: "Hipertensión arterial", risk: "Consumo excesivo de sal" },
@@ -527,31 +328,25 @@
                 { disease: "Osteoartritis de rodilla", risk: "Obesidad y actividades de alto impacto articular" }
             ];
             
+            // Constantes del temporizador
+            const TURN_TIME = 30; // 30 segundos por turno
+            const BONUS_TIME = 15; // 15 segundos de bonificación por acierto
+
             // Variables del juego
             let currentPairs = mediumPairs;
             let cards = [];
             let flippedCards = [];
             let matchedPairs = 0;
             let totalScore = 0;
-            let timer;
-            let timeLeft = 600; // 10 minutos por defecto
+            let turnTimer;
+            let turnTimeLeft = TURN_TIME;
             let gameActive = false;
             let difficulty = 'medium';
             
             // Variables de equipos
-            let currentTeam = 1; // Equipo que tiene el turno actual (1 o 2)
-            let team1 = {
-                name: "Equipo 1",
-                score: 0,
-                matches: 0,
-                misses: 0
-            };
-            let team2 = {
-                name: "Equipo 2",
-                score: 0,
-                matches: 0,
-                misses: 0
-            };
+            let currentTeam = 1; 
+            let team1 = { name: "Equipo 1", score: 0, matches: 0, misses: 0 };
+            let team2 = { name: "Equipo 2", score: 0, matches: 0, misses: 0 };
             
             // Elementos DOM
             const teamSetup = document.getElementById('team-setup');
@@ -566,13 +361,9 @@
             const mediumBtn = document.getElementById('medium-btn');
             const hardBtn = document.getElementById('hard-btn');
             const winModal = document.getElementById('win-modal');
-            const loseModal = document.getElementById('lose-modal');
             const playAgainBtn = document.getElementById('play-again-btn');
-            const tryAgainBtn = document.getElementById('try-again-btn');
             const downloadReportBtn = document.getElementById('download-report-btn');
-            const downloadLoseReportBtn = document.getElementById('download-lose-report-btn');
             
-            // Elementos de equipos
             const team1NameInput = document.getElementById('team1-name');
             const team2NameInput = document.getElementById('team2-name');
             const startGameBtn = document.getElementById('start-game-btn');
@@ -585,28 +376,22 @@
             const team1MatchesDisplay = document.getElementById('team1-matches');
             const team2MatchesDisplay = document.getElementById('team2-matches');
             
-            // Event listeners para configuración de equipos
             startGameBtn.addEventListener('click', () => {
                 team1.name = team1NameInput.value || "Equipo 1";
                 team2.name = team2NameInput.value || "Equipo 2";
-                
                 team1NameDisplay.textContent = team1.name;
                 team2NameDisplay.textContent = team2.name;
-                
                 teamSetup.classList.add('hidden');
                 gameContainer.classList.remove('hidden');
                 gameContainer.classList.add('fade-in');
-                
                 initGame();
             });
             
-            // Inicializar juego
             function initGame() {
                 resetGame();
                 createCards();
-                startTimer();
+                startTurn();
                 gameActive = true;
-                updateTeamIndicators();
             }
             
             function resetGame() {
@@ -614,111 +399,66 @@
                 flippedCards = [];
                 matchedPairs = 0;
                 totalScore = 0;
-                
-                // Reiniciar equipos
-                team1.score = 0;
-                team1.matches = 0;
-                team1.misses = 0;
-                team2.score = 0;
-                team2.matches = 0;
-                team2.misses = 0;
-                
-                // Establecer equipo inicial aleatoriamente
+                team1 = { ...team1, score: 0, matches: 0, misses: 0 };
+                team2 = { ...team2, score: 0, matches: 0, misses: 0 };
                 currentTeam = Math.random() < 0.5 ? 1 : 2;
                 
-                // Establecer tiempo según dificultad
-                if (difficulty === 'easy') {
-                    timeLeft = 300; // 5 minutos
-                    currentPairs = easyPairs;
-                } else if (difficulty === 'medium') {
-                    timeLeft = 600; // 10 minutos
-                    currentPairs = mediumPairs;
-                } else {
-                    timeLeft = 900; // 15 minutos
-                    currentPairs = hardPairs;
-                }
+                if (difficulty === 'easy') currentPairs = easyPairs;
+                else if (difficulty === 'medium') currentPairs = mediumPairs;
+                else currentPairs = hardPairs;
                 
+                clearInterval(turnTimer);
                 updateUI();
-                clearInterval(timer);
+            }
+
+            function startTurn() {
+                turnTimeLeft = TURN_TIME;
+                updateTeamIndicators();
+                startTurnTimer();
+            }
+
+            function switchTurn() {
+                currentTeam = currentTeam === 1 ? 2 : 1;
+                clearInterval(turnTimer);
+                startTurn();
             }
             
             function createCards() {
                 cards = [];
-                
-                // Crear pares de cartas (enfermedad y factor de riesgo)
                 currentPairs.forEach(pair => {
-                    cards.push({
-                        id: generateId(),
-                        type: 'disease',
-                        content: pair.disease,
-                        match: pair.risk
-                    });
-                    
-                    cards.push({
-                        id: generateId(),
-                        type: 'risk',
-                        content: pair.risk,
-                        match: pair.disease
-                    });
+                    cards.push({ id: generateId(), type: 'disease', content: pair.disease, match: pair.risk });
+                    cards.push({ id: generateId(), type: 'risk', content: pair.risk, match: pair.disease });
                 });
-                
-                // Mezclar cartas
                 shuffleArray(cards);
                 
-                // Crear elementos DOM para las cartas
                 cards.forEach(card => {
                     const cardElement = document.createElement('div');
-                    cardElement.className = 'card aspect-[3/4] cursor-pointer';
+                    cardElement.className = 'card aspect-[4/3] cursor-pointer';
                     cardElement.dataset.id = card.id;
-                    
                     cardElement.innerHTML = `
                         <div class="card-inner w-full h-full relative">
-                            <div class="card-front absolute w-full h-full rounded-xl bg-gradient-to-br ${card.type === 'disease' ? 'from-blue-600 to-blue-800' : 'from-purple-600 to-purple-800'} flex items-center justify-center p-4">
-                                <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mb-2">
-                                    ${card.type === 'disease' ? 
-                                        `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>` : 
-                                        `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>`
-                                    }
-                                </div>
-                                <span class="text-xs">?</span>
+                            <div class="card-front ${card.type} absolute w-full h-full flex items-center justify-center p-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-1/2 h-1/2 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
                             </div>
-                            <div class="card-back absolute w-full h-full rounded-xl bg-gradient-to-br ${card.type === 'disease' ? 'from-blue-500 to-blue-700' : 'from-purple-500 to-purple-700'} flex flex-col items-center justify-center p-3 text-center">
-                                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mb-1">
-                                    ${card.type === 'disease' ? 
-                                        `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                        </svg>` : 
-                                        `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>`
-                                    }
-                                </div>
-                                <span class="font-medium text-xs sm:text-sm">${card.content}</span>
+                            <div class="card-back ${card.type} absolute w-full h-full flex flex-col items-center justify-center p-2 text-center">
+                                <span class="card-text-outline font-bold text-xs sm:text-sm xl:text-base">${card.content}</span>
                             </div>
-                        </div>
-                    `;
-                    
+                        </div>`;
                     cardElement.addEventListener('click', () => flipCard(cardElement, card));
                     gameBoard.appendChild(cardElement);
                 });
             }
             
             function flipCard(cardElement, card) {
-                // Verificar si el juego está activo y si la carta ya está volteada o emparejada
                 if (!gameActive || flippedCards.length >= 2 || cardElement.classList.contains('flipped') || cardElement.classList.contains('matched')) {
                     return;
                 }
-                
-                // Voltear carta
                 cardElement.classList.add('flipped');
                 flippedCards.push({ element: cardElement, card: card });
-                
-                // Si hay dos cartas volteadas, verificar si son pareja
                 if (flippedCards.length === 2) {
+                    gameActive = false; // Bloquear más clics mientras se verifica
                     setTimeout(checkMatch, 800);
                 }
             }
@@ -727,13 +467,9 @@
                 const [card1, card2] = flippedCards;
                 const currentTeamObj = currentTeam === 1 ? team1 : team2;
                 
-                // Verificar si las cartas coinciden
-                if (card1.card.content === card2.card.match || card2.card.content === card1.card.match) {
-                    // Marcar como emparejadas
+                if (card1.card.match === card2.card.content) {
                     card1.element.classList.add('matched');
                     card2.element.classList.add('matched');
-                    
-                    // Efecto de coincidencia
                     card1.element.classList.add('highlight');
                     card2.element.classList.add('highlight');
                     setTimeout(() => {
@@ -741,322 +477,182 @@
                         card2.element.classList.remove('highlight');
                     }, 1000);
                     
-                    // Actualizar puntuación y contador de parejas
                     matchedPairs++;
-                    
-                    // Calcular puntos según dificultad
-                    let points = 50;
-                    if (difficulty === 'medium') points = 75;
-                    if (difficulty === 'hard') points = 100;
-                    
-                    // Añadir puntos al equipo actual
-                    points += Math.floor(timeLeft / 5);
+                    let points = difficulty === 'hard' ? 100 : difficulty === 'medium' ? 75 : 50;
+                    points += Math.floor(turnTimeLeft / 2); // Bonus por tiempo restante en el turno
                     currentTeamObj.score += points;
                     currentTeamObj.matches++;
                     totalScore += points;
                     
-                    // Crear confeti para celebrar
-                    createConfetti();
+                    turnTimeLeft += BONUS_TIME; // Añadir tiempo extra
                     
-                    // Verificar victoria
                     if (matchedPairs === currentPairs.length) {
                         gameWon();
                     }
-                    
-                    // El equipo actual mantiene el turno si acierta
                 } else {
-                    // Voltear cartas de nuevo
                     card1.element.classList.remove('flipped');
                     card2.element.classList.remove('flipped');
-                    
-                    // Penalización de puntos
-                    currentTeamObj.score = Math.max(0, currentTeamObj.score - 10);
                     currentTeamObj.misses++;
-                    totalScore = Math.max(0, totalScore - 10);
-                    
-                    // Cambiar al otro equipo
-                    currentTeam = currentTeam === 1 ? 2 : 1;
+                    switchTurn();
                 }
                 
-                // Actualizar UI
                 updateUI();
-                updateTeamIndicators();
-                
-                // Limpiar cartas volteadas
                 flippedCards = [];
+                gameActive = true; // Desbloquear clics
             }
             
             function updateTeamIndicators() {
-                // Actualizar indicadores visuales de turno
                 if (currentTeam === 1) {
-                    team1Indicator.classList.add('active', 'pulse');
-                    team2Indicator.classList.remove('active', 'pulse');
+                    team1Indicator.classList.add('active');
+                    team2Indicator.classList.remove('active');
                 } else {
-                    team1Indicator.classList.remove('active', 'pulse');
-                    team2Indicator.classList.add('active', 'pulse');
+                    team1Indicator.classList.remove('active');
+                    team2Indicator.classList.add('active');
                 }
-                
-                // Actualizar puntuaciones y aciertos
                 team1ScoreDisplay.textContent = team1.score;
                 team2ScoreDisplay.textContent = team2.score;
                 team1MatchesDisplay.textContent = team1.matches;
                 team2MatchesDisplay.textContent = team2.matches;
             }
             
-            function startTimer() {
-                timer = setInterval(() => {
-                    timeLeft--;
-                    
-                    // Actualizar barra de progreso
-                    const percentage = (timeLeft / (difficulty === 'easy' ? 240 : difficulty === 'medium' ? 300 : 360)) * 100;
-                    progressBar.style.width = `${percentage}%`;
-                    
-                    // Cambiar color según tiempo restante
-                    if (percentage < 25) {
-                        progressBar.className = 'progress-bar bg-red-500 h-3 rounded-full';
-                    } else if (percentage < 50) {
-                        progressBar.className = 'progress-bar bg-yellow-500 h-3 rounded-full';
-                    } else {
-                        progressBar.className = 'progress-bar bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full';
-                    }
-                    
-                    updateUI();
-                    
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        gameLost();
+            function startTurnTimer() {
+                clearInterval(turnTimer);
+                turnTimer = setInterval(() => {
+                    turnTimeLeft--;
+                    updateTimerUI();
+                    if (turnTimeLeft <= 0) {
+                        clearInterval(turnTimer);
+                        (currentTeam === 1 ? team1 : team2).misses++;
+                        flippedCards.forEach(c => c.element.classList.remove('flipped'));
+                        flippedCards = [];
+                        switchTurn();
                     }
                 }, 1000);
             }
-            
-            function updateUI() {
-                // Actualizar tiempo
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
+
+            function updateTimerUI() {
+                const minutes = Math.floor(turnTimeLeft / 60);
+                const seconds = turnTimeLeft % 60;
                 timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 
-                // Actualizar puntuación total
-                totalScoreElement.textContent = totalScore;
+                const percentage = (turnTimeLeft / TURN_TIME) * 100;
+                progressBar.style.width = `${percentage}%`;
                 
-                // Actualizar parejas
+                if (percentage < 25) progressBar.className = 'progress-bar bg-red-400 h-full rounded-full';
+                else if (percentage < 50) progressBar.className = 'progress-bar bg-yellow-400 h-full rounded-full';
+                else progressBar.className = 'progress-bar bg-gradient-to-r from-green-400 to-blue-400 h-full rounded-full';
+            }
+            
+            function updateUI() {
+                updateTimerUI();
+                totalScoreElement.textContent = totalScore;
                 pairsElement.textContent = `${matchedPairs}/${currentPairs.length}`;
+                updateTeamIndicators();
             }
             
             function gameWon() {
                 gameActive = false;
-                clearInterval(timer);
-                
-                // Determinar equipo ganador
+                clearInterval(turnTimer);
                 const winner = team1.score > team2.score ? team1.name : team2.score > team1.score ? team2.name : "¡Empate!";
                 
-                // Actualizar modal de victoria
                 document.getElementById('winner-team').textContent = winner;
-                document.getElementById('win-time').textContent = timerElement.textContent;
-                document.getElementById('win-level').textContent = difficulty === 'easy' ? 'Fácil' : difficulty === 'medium' ? 'Intermedio' : 'Difícil';
+                document.getElementById('win-level').textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
                 
-                // Actualizar resultados del equipo 1
-                document.getElementById('team1-result-name').textContent = team1.name;
-                document.getElementById('team1-final-score').textContent = team1.score;
-                document.getElementById('team1-final-matches').textContent = team1.matches;
-                document.getElementById('team1-final-misses').textContent = team1.misses;
-                document.getElementById('team1-final-accuracy').textContent = 
-                    team1.matches + team1.misses > 0 
-                        ? `${Math.round((team1.matches / (team1.matches + team1.misses)) * 100)}%` 
-                        : "0%";
+                ['team1', 'team2'].forEach(team => {
+                    const teamObj = team === 'team1' ? team1 : team2;
+                    document.getElementById(`${team}-result-name`).textContent = teamObj.name;
+                    document.getElementById(`${team}-final-score`).textContent = teamObj.score;
+                    document.getElementById(`${team}-final-matches`).textContent = teamObj.matches;
+                    document.getElementById(`${team}-final-misses`).textContent = teamObj.misses;
+                    const accuracy = teamObj.matches + teamObj.misses > 0 ? `${Math.round((teamObj.matches / (teamObj.matches + teamObj.misses)) * 100)}%` : "0%";
+                    document.getElementById(`${team}-final-accuracy`).textContent = accuracy;
+                });
                 
-                // Actualizar resultados del equipo 2
-                document.getElementById('team2-result-name').textContent = team2.name;
-                document.getElementById('team2-final-score').textContent = team2.score;
-                document.getElementById('team2-final-matches').textContent = team2.matches;
-                document.getElementById('team2-final-misses').textContent = team2.misses;
-                document.getElementById('team2-final-accuracy').textContent = 
-                    team2.matches + team2.misses > 0 
-                        ? `${Math.round((team2.matches / (team2.matches + team2.misses)) * 100)}%` 
-                        : "0%";
-                
-                // Mostrar modal
-                setTimeout(() => {
-                    winModal.classList.add('active');
-                }, 1000);
+                setTimeout(() => winModal.classList.add('active'), 1000);
             }
             
-            function gameLost() {
-                gameActive = false;
-                
-                // Determinar equipo ganador
-                const winner = team1.score > team2.score ? team1.name : team2.score > team1.score ? team2.name : "¡Empate!";
-                
-                // Actualizar modal de derrota
-                document.getElementById('lose-winner-team').textContent = winner;
-                document.getElementById('lose-pairs').textContent = `${matchedPairs}/${currentPairs.length}`;
-                document.getElementById('lose-level').textContent = difficulty === 'easy' ? 'Fácil' : difficulty === 'medium' ? 'Intermedio' : 'Difícil';
-                
-                // Actualizar resultados del equipo 1
-                document.getElementById('lose-team1-result-name').textContent = team1.name;
-                document.getElementById('lose-team1-final-score').textContent = team1.score;
-                document.getElementById('lose-team1-final-matches').textContent = team1.matches;
-                document.getElementById('lose-team1-final-misses').textContent = team1.misses;
-                document.getElementById('lose-team1-final-accuracy').textContent = 
-                    team1.matches + team1.misses > 0 
-                        ? `${Math.round((team1.matches / (team1.matches + team1.misses)) * 100)}%` 
-                        : "0%";
-                
-                // Actualizar resultados del equipo 2
-                document.getElementById('lose-team2-result-name').textContent = team2.name;
-                document.getElementById('lose-team2-final-score').textContent = team2.score;
-                document.getElementById('lose-team2-final-matches').textContent = team2.matches;
-                document.getElementById('lose-team2-final-misses').textContent = team2.misses;
-                document.getElementById('lose-team2-final-accuracy').textContent = 
-                    team2.matches + team2.misses > 0 
-                        ? `${Math.round((team2.matches / (team2.matches + team2.misses)) * 100)}%` 
-                        : "0%";
-                
-                // Mostrar modal
-                loseModal.classList.add('active');
-            }
             
-            function createConfetti() {
-                const confettiCount = 30;
-                const colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
-                
-                for (let i = 0; i < confettiCount; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.className = 'confetti';
-                    confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.width = `${Math.random() * 10 + 5}px`;
-                    confetti.style.height = confetti.style.width;
-                    confetti.style.opacity = Math.random() + 0.5;
-                    confetti.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                    document.body.appendChild(confetti);
-                    
-                    // Eliminar confeti después de la animación
-                    setTimeout(() => {
-                        confetti.remove();
-                    }, 5000);
-                }
-            }
-            
-            // Función para generar PDF de resultados
-            function generatePDF(isWin) {
+            function generatePDF() {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 
-                // Título
                 doc.setFontSize(22);
                 doc.setTextColor(0, 51, 102);
                 doc.text("Reporte de Resultados - Conexión Clínica", 105, 20, { align: "center" });
                 
-                // Fecha y hora
                 const now = new Date();
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
                 doc.text(`Fecha: ${now.toLocaleDateString()} - Hora: ${now.toLocaleTimeString()}`, 105, 30, { align: "center" });
                 
-                // Línea separadora
                 doc.setDrawColor(0, 51, 102);
                 doc.setLineWidth(0.5);
                 doc.line(20, 35, 190, 35);
                 
-                // Información del juego
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0);
                 doc.text("Información del Juego", 20, 45);
                 
                 doc.setFontSize(12);
-                doc.text(`Nivel de dificultad: ${difficulty === 'easy' ? 'Fácil' : difficulty === 'medium' ? 'Intermedio' : 'Difícil'}`, 25, 55);
+                doc.text(`Nivel de dificultad: ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}`, 25, 55);
                 doc.text(`Pares encontrados: ${matchedPairs}/${currentPairs.length}`, 25, 65);
-                doc.text(`Tiempo ${isWin ? 'restante' : 'agotado'}: ${timerElement.textContent}`, 25, 75);
                 
-                // Equipo ganador
                 const winner = team1.score > team2.score ? team1.name : team2.score > team1.score ? team2.name : "¡Empate!";
                 doc.setFontSize(16);
                 doc.setTextColor(0, 102, 0);
-                doc.text(`Equipo ganador: ${winner}`, 105, 90, { align: "center" });
+                doc.text(`Equipo ganador: ${winner}`, 105, 80, { align: "center" });
                 
-                // Resultados por equipo
                 doc.setFontSize(14);
                 doc.setTextColor(0, 0, 0);
-                doc.text("Resultados por Equipo", 20, 105);
+                doc.text("Resultados por Equipo", 20, 95);
                 
-                // Equipo 1
+                const team1accuracy = team1.matches + team1.misses > 0 ? Math.round((team1.matches / (team1.matches + team1.misses)) * 100) : 0;
                 doc.setFontSize(12);
                 doc.setTextColor(0, 51, 153);
-                doc.text(`${team1.name}:`, 25, 115);
+                doc.text(`${team1.name}:`, 25, 105);
                 doc.setTextColor(0, 0, 0);
-                doc.text(`Puntuación: ${team1.score}`, 35, 125);
-                doc.text(`Pares encontrados: ${team1.matches}`, 35, 135);
-                doc.text(`Intentos fallidos: ${team1.misses}`, 35, 145);
-                doc.text(`Precisión: ${team1.matches + team1.misses > 0 ? Math.round((team1.matches / (team1.matches + team1.misses)) * 100) : 0}%`, 35, 155);
+                doc.text(`Puntuación: ${team1.score}`, 35, 115);
+                doc.text(`Pares encontrados: ${team1.matches}`, 35, 125);
+                doc.text(`Intentos fallidos: ${team1.misses}`, 35, 135);
+                doc.text(`Precisión: ${team1accuracy}%`, 35, 145);
                 
-                // Equipo 2
+                const team2accuracy = team2.matches + team2.misses > 0 ? Math.round((team2.matches / (team2.matches + team2.misses)) * 100) : 0;
                 doc.setFontSize(12);
                 doc.setTextColor(102, 0, 153);
-                doc.text(`${team2.name}:`, 120, 115);
+                doc.text(`${team2.name}:`, 120, 105);
                 doc.setTextColor(0, 0, 0);
-                doc.text(`Puntuación: ${team2.score}`, 130, 125);
-                doc.text(`Pares encontrados: ${team2.matches}`, 130, 135);
-                doc.text(`Intentos fallidos: ${team2.misses}`, 130, 145);
-                doc.text(`Precisión: ${team2.matches + team2.misses > 0 ? Math.round((team2.matches / (team2.matches + team2.misses)) * 100) : 0}%`, 130, 155);
+                doc.text(`Puntuación: ${team2.score}`, 130, 115);
+                doc.text(`Pares encontrados: ${team2.matches}`, 130, 125);
+                doc.text(`Intentos fallidos: ${team2.misses}`, 130, 135);
+                doc.text(`Precisión: ${team2accuracy}%`, 130, 145);
                 
-                // Línea separadora
                 doc.setDrawColor(0, 51, 102);
                 doc.setLineWidth(0.5);
-                doc.line(20, 170, 190, 170);
+                doc.line(20, 160, 190, 160);
                 
-                // Mensaje final
-                doc.setFontSize(12);
-                doc.setTextColor(0, 0, 0);
-                doc.text("¡Gracias por jugar a Conexiones!", 105, 180, { align: "center" });
-                doc.text("Recuerda que prevenir es mejor que curar.", 105, 190, { align: "center" });
-                
-                // Pie de página
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
-                doc.text("© Patología Clínica - Juego educativo sobre patologías y factores de riesgo prevenibles diseñado por M.C. Adriana Alicia Barrios Rodríguez", 105, 280, { align: "center" });
+                doc.text("© Patología Clínica - Juego educativo por M.C. Adriana Alicia Barrios Rodríguez", 105, 280, { align: "center" });
                 
-                // Guardar PDF
                 doc.save("Reporte_Conexion_Clinica.pdf");
             }
             
-            // Utilidades
-            function generateId() {
-                return Math.random().toString(36).substring(2, 15);
-            }
+            function generateId() { return Math.random().toString(36).substring(2, 15); }
+            function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
             
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array;
-            }
-            
-            // Event listeners
             restartBtn.addEventListener('click', initGame);
             
-            easyBtn.addEventListener('click', () => {
-                difficulty = 'easy';
-                easyBtn.className = 'px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition';
-                mediumBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                hardBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                initGame();
-            });
-            
-            mediumBtn.addEventListener('click', () => {
-                difficulty = 'medium';
-                easyBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                mediumBtn.className = 'px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition';
-                hardBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                initGame();
-            });
-            
-            hardBtn.addEventListener('click', () => {
-                difficulty = 'hard';
-                easyBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                mediumBtn.className = 'px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition';
-                hardBtn.className = 'px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 transition';
-                initGame();
+            [easyBtn, mediumBtn, hardBtn].forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    difficulty = e.target.id.replace('-btn', '');
+                    [easyBtn, mediumBtn, hardBtn].forEach(b => {
+                        b.classList.remove('bg-green-400', 'bg-blue-400', 'bg-pink-400');
+                        b.classList.add('bg-green-300');
+                    });
+                    e.target.classList.remove('bg-green-300');
+                    e.target.classList.add(`bg-${e.target.id.includes('easy') ? 'green' : e.target.id.includes('medium') ? 'blue' : 'pink'}-400`);
+                    initGame();
+                });
             });
             
             playAgainBtn.addEventListener('click', () => {
@@ -1064,19 +660,8 @@
                 initGame();
             });
             
-            tryAgainBtn.addEventListener('click', () => {
-                loseModal.classList.remove('active');
-                initGame();
-            });
-            
-            downloadReportBtn.addEventListener('click', () => {
-                generatePDF(true);
-            });
-            
-            downloadLoseReportBtn.addEventListener('click', () => {
-                generatePDF(false);
-            });
+            downloadReportBtn.addEventListener('click', generatePDF);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9697bc12e1b0f049',t:'MTc1NDI0NDIzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
