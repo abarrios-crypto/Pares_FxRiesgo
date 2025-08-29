@@ -95,6 +95,10 @@
         .card-text-outline {
             text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
         }
+        
+        .card-back span {
+            line-height: 1.1; /* Reduce el interlineado */
+        }
 
         .matched {
             opacity: 0.7;
@@ -122,9 +126,14 @@
             visibility: visible;
         }
         
+        .team-indicator {
+            transition: all 0.3s ease;
+            color: #582c83; /* Color de texto morado oscuro para los indicadores */
+        }
+        
         .team-indicator.active {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            transform: scale(1.1);
+            border: 4px solid #fef08a; /* Borde amarillo brillante */
         }
         
     </style>
@@ -148,8 +157,9 @@
                 <label for="team2-name" class="block mb-2 font-bold">Integrantes del Equipo 2:</label>
                 <input type="text" id="team2-name" class="w-full px-4 py-2 rounded-full bg-white/80 border-4 border-white focus:outline-none focus:ring-4 focus:ring-blue-300" placeholder="Equipo 2" value="Equipo 2">
             </div>
-            <div class="flex gap-4">
+            <div class="flex flex-col gap-4">
                 <button id="start-game-btn" class="kirby-button flex-1 py-3 bg-gradient-to-b from-green-400 to-green-500 font-bold text-lg">Comenzar Juego</button>
+                <button id="delete-progress-btn" class="kirby-button flex-1 py-2 bg-gradient-to-b from-red-400 to-red-500 font-bold text-sm">Borrar Progreso</button>
             </div>
         </div>
         
@@ -202,12 +212,12 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div id="team1-indicator" class="team-indicator active bg-pink-300/80 rounded-2xl p-1.5 text-center border-2 border-white">
-                        <h3 id="team1-name-display" class="font-semibold text-xs truncate text-white">Equipo 1</h3>
-                        <div class="flex justify-between text-[10px] text-white/90"><span>Puntos: <span id="team1-score">0</span></span><span>Aciertos: <span id="team1-matches">0</span></span></div>
+                        <h3 id="team1-name-display" class="font-semibold text-xs truncate">Equipo 1</h3>
+                        <div class="flex justify-between text-[10px]"><span>Puntos: <span id="team1-score">0</span></span><span>Aciertos: <span id="team1-matches">0</span></span></div>
                     </div>
                     <div id="team2-indicator" class="team-indicator bg-blue-300/80 rounded-2xl p-1.5 text-center border-2 border-white">
-                        <h3 id="team2-name-display" class="font-semibold text-xs truncate text-white">Equipo 2</h3>
-                        <div class="flex justify-between text-[10px] text-white/90"><span>Puntos: <span id="team2-score">0</span></span><span>Aciertos: <span id="team2-matches">0</span></span></div>
+                        <h3 id="team2-name-display" class="font-semibold text-xs truncate">Equipo 2</h3>
+                        <div class="flex justify-between text-[10px]"><span>Puntos: <span id="team2-score">0</span></span><span>Aciertos: <span id="team2-matches">0</span></span></div>
                     </div>
                 </div>
             </div>
@@ -263,6 +273,20 @@
                 <div class="flex flex-col sm:flex-row gap-4">
                     <button id="download-report-btn" class="kirby-button flex-1 py-3 bg-blue-400 font-bold">Descargar Reporte</button>
                     <button id="play-again-btn" class="kirby-button flex-1 py-3 bg-green-400 font-bold">Jugar de nuevo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para continuar progreso -->
+    <div id="continue-modal" class="modal fixed inset-0 flex items-center justify-center z-50 bg-black/70 p-4">
+        <div class="kirby-panel p-6 sm:p-8 max-w-md w-full mx-auto relative">
+            <div class="text-center relative z-10">
+                <h2 class="text-2xl font-bold mb-4">¡Hola de nuevo!</h2>
+                <p class="mb-6">Hemos encontrado una partida guardada. ¿Deseas continuar?</p>
+                <div class="flex gap-4">
+                    <button id="continue-yes" class="kirby-button flex-1 py-3 bg-green-400 font-bold">Sí, continuar</button>
+                    <button id="continue-no" class="kirby-button flex-1 py-3 bg-red-400 font-bold">No, empezar de cero</button>
                 </div>
             </div>
         </div>
@@ -363,6 +387,10 @@
             const winModal = document.getElementById('win-modal');
             const playAgainBtn = document.getElementById('play-again-btn');
             const downloadReportBtn = document.getElementById('download-report-btn');
+            const deleteProgressBtn = document.getElementById('delete-progress-btn');
+            const continueModal = document.getElementById('continue-modal');
+            const continueYesBtn = document.getElementById('continue-yes');
+            const continueNoBtn = document.getElementById('continue-no');
             
             const team1NameInput = document.getElementById('team1-name');
             const team2NameInput = document.getElementById('team2-name');
@@ -375,6 +403,82 @@
             const team2ScoreDisplay = document.getElementById('team2-score');
             const team1MatchesDisplay = document.getElementById('team1-matches');
             const team2MatchesDisplay = document.getElementById('team2-matches');
+
+            // --- Lógica de LocalStorage ---
+            function saveProgress() {
+                const gameState = {
+                    difficulty,
+                    team1,
+                    team2,
+                    currentTeam,
+                    totalScore,
+                    matchedPairs,
+                    matchedCardContents: Array.from(gameBoard.querySelectorAll('.matched .card-back span')).map(span => span.textContent)
+                };
+                localStorage.setItem('patoclin_kirby_save', JSON.stringify(gameState));
+            }
+
+            function loadProgress() {
+                const savedGame = localStorage.getItem('patoclin_kirby_save');
+                if (savedGame) {
+                    continueModal.classList.add('active');
+                }
+            }
+
+            function applySavedProgress(savedState) {
+                difficulty = savedState.difficulty;
+                team1 = savedState.team1;
+                team2 = savedState.team2;
+                currentTeam = savedState.currentTeam;
+                totalScore = savedState.totalScore;
+                matchedPairs = savedState.matchedPairs;
+
+                team1NameInput.value = team1.name;
+                team2NameInput.value = team2.name;
+                team1NameDisplay.textContent = team1.name;
+                team2NameDisplay.textContent = team2.name;
+                
+                if (difficulty === 'easy') currentPairs = easyPairs;
+                else if (difficulty === 'medium') currentPairs = mediumPairs;
+                else currentPairs = hardPairs;
+
+                teamSetup.classList.add('hidden');
+                gameContainer.classList.remove('hidden');
+
+                createCards();
+                
+                // Marcar cartas como emparejadas
+                const cardElements = gameBoard.querySelectorAll('.card');
+                cardElements.forEach(cardEl => {
+                    const cardText = cardEl.querySelector('.card-back span').textContent;
+                    if (savedState.matchedCardContents.includes(cardText)) {
+                        cardEl.classList.add('matched');
+                    }
+                });
+
+                updateUI();
+                startTurn();
+                gameActive = true;
+            }
+
+            function deleteProgress() {
+                localStorage.removeItem('patoclin_kirby_save');
+                alert('¡Progreso borrado!');
+            }
+
+            // --- Eventos de LocalStorage ---
+            deleteProgressBtn.addEventListener('click', deleteProgress);
+            continueYesBtn.addEventListener('click', () => {
+                const savedGame = JSON.parse(localStorage.getItem('patoclin_kirby_save'));
+                applySavedProgress(savedGame);
+                continueModal.classList.remove('active');
+            });
+            continueNoBtn.addEventListener('click', () => {
+                deleteProgress();
+                continueModal.classList.remove('active');
+            });
+
+            // --- Lógica del juego ---
             
             startGameBtn.addEventListener('click', () => {
                 team1.name = team1NameInput.value || "Equipo 1";
@@ -421,6 +525,7 @@
                 currentTeam = currentTeam === 1 ? 2 : 1;
                 clearInterval(turnTimer);
                 startTurn();
+                saveProgress();
             }
             
             function createCards() {
@@ -488,6 +593,9 @@
                     
                     if (matchedPairs === currentPairs.length) {
                         gameWon();
+                        deleteProgress(); // Borra el progreso al ganar
+                    } else {
+                        saveProgress();
                     }
                 } else {
                     card1.element.classList.remove('flipped');
@@ -640,7 +748,10 @@
             function generateId() { return Math.random().toString(36).substring(2, 15); }
             function shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
             
-            restartBtn.addEventListener('click', initGame);
+            restartBtn.addEventListener('click', () => {
+                deleteProgress();
+                initGame();
+            });
             
             [easyBtn, mediumBtn, hardBtn].forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -661,6 +772,9 @@
             });
             
             downloadReportBtn.addEventListener('click', generatePDF);
+
+            // Cargar progreso al iniciar
+            loadProgress();
         });
     </script>
 </body>
